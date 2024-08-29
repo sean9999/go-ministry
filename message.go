@@ -11,7 +11,7 @@ type Message struct {
 	ID       uuid.UUID       `json:"id,omitempty"`
 	ThreadID uuid.UUID       `json:"thread_id,omitempty"`
 	Subject  string          `json:"subject,omitempty"`
-	Payload  map[string]any  `json:"payload,omitempty"`
+	Payload  json.RawMessage `json:"payload,omitempty"`
 	Conn     *websocket.Conn `json:"-"`
 }
 

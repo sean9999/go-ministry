@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "isolatedModules": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "target": "esnext",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "explainFiles": true,
+        "allowArbitraryExtensions": false
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "public_html",
+        "test"
+    ]
+}
