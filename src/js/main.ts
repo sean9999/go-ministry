@@ -1,13 +1,20 @@
 import { SoccerMessage } from './msg';
-import Soccer from './soccer';
 
-const ws = new Soccer("ws://localhost:8282/ws");
+const ws = new WebSocket("ws://localhost:8282/ws");
 
-ws.onMessage(msg => {
-    console.log(msg);
+ws.addEventListener("message", ev => {
+    const msg = SoccerMessage.deserialize(ev.data);
+    console.log("msg", msg.record);
 });
+ws.addEventListener("open", console.info);
+ws.addEventListener("error", console.error);
+ws.addEventListener("close", console.debug);
 
-ws.init();
+setInterval(() => {
+    const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
+    ws.send( msg.serialize() );
+}, 30511);
+
 
 // const hello = new SoccerMessage("hello");
 
@@ -32,8 +39,8 @@ ws.init();
 //     console.log({err}, "error");
 // });
 
-setInterval(() => {
-    const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
-    console.log("sending", {msg});
-    ws.send(msg);
-}, 5555);
+// setInterval(() => {
+//     const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
+//     console.log("hello", msg.record);
+//     ws.send(msg);
+// }, 7511);

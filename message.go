@@ -8,9 +8,9 @@ import (
 )
 
 type Message struct {
-	ID       uuid.UUID       `json:"id,omitempty"`
-	ThreadID uuid.UUID       `json:"thread_id,omitempty"`
-	Subject  string          `json:"subject,omitempty"`
+	ID       *uuid.UUID      `json:"id"`
+	ThreadID *uuid.UUID      `json:"thread_id,omitempty"`
+	Subject  string          `json:"subject"`
 	Payload  json.RawMessage `json:"payload,omitempty"`
 	Conn     *websocket.Conn `json:"-"`
 }
@@ -21,9 +21,20 @@ func NewMessage() *Message {
 		panic(err)
 	}
 	msg := Message{
-		ID: id,
+		ID: &id,
 	}
 	return &msg
+}
+
+func (m *Message) Reply() *Message {
+	r := NewMessage()
+	if m.ThreadID == nil {
+		r.ThreadID = m.ID
+	} else {
+		r.ThreadID = m.ThreadID
+	}
+	r.Subject = m.Subject
+	return r
 }
 
 func (m *Message) Hash() string {
