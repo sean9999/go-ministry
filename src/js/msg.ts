@@ -6,7 +6,7 @@ export type SoccerRecord = {
     id: string;
     thread_id?: string;
     subject: string;
-    payload: any;
+    payload?: any;
 };
 
 export class SoccerMessage{
@@ -23,7 +23,7 @@ export class SoccerMessage{
         return this.record.subject;
     }
     get thread_id() : string | null | undefined {
-        return this.record.thread_id;
+        return this.record?.thread_id;
     }
     get id() : string {
         return this.record.id;
@@ -41,13 +41,13 @@ export class SoccerMessage{
         return JSON.stringify(this.record);
     }
     reply(pay=null) : SoccerMessage {
-        const s = new SoccerMessage(this.record.subject, pay);
-        if (this.record.thread_id) {
-            s.record.thread_id = this.record.thread_id;
+        const retort = new SoccerMessage(this.record.subject, pay);
+        if (this.thread_id) {
+            retort.record.thread_id = this.record.thread_id;
         } else {
-            s.record.thread_id = this.record.id;
+            retort.record.thread_id = this.record.id;
         }
-        return s;
+        return retort;
     }
 }
 

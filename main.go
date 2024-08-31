@@ -9,14 +9,21 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
+
 	// Initialize structured logging
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnixMs
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal().Msg("Error loading .env file")
+	}
 
 	// Create a new Chi router
 	r := chi.NewRouter()
@@ -27,7 +34,11 @@ func main() {
 
 	// WebSocket endpoint
 	mother := NewMotherShip()
-	r.Mount("/ws", mother)
+	ws_path := os.Getenv("WS_PATH")
+	if ws_path == "" {
+		ws_path = "ws"
+	}
+	r.Mount(fmt.Sprintf("/%s", ws_path), mother)
 
 	//	source maps
 	sourceMaps := http.FileServer(http.Dir("."))
@@ -43,7 +54,7 @@ func main() {
 		msg := NewMessage()
 		msg.Subject = "jazz"
 		msg.Payload = json.RawMessage(fmt.Sprintf("%q", "all your base are belong to us"))
-		mother.Outbox <- *msg
+		mother.Outbox <- msg
 	}()
 
 	//	process incoming [Message]s
@@ -63,7 +74,7 @@ func main() {
 				log.Info().Str("subject", msg.Subject).Str("uuid", msg.ID.String()).Msgf("%v", msg.Payload)
 				msg2 := msg.Reply()
 				msg2.Subject = "goodbye"
-				mother.Outbox <- *msg2
+				mother.Outbox <- msg2
 			default:
 				log.Info().Str("subject", msg.Subject).Msg("default case")
 			}
@@ -76,7 +87,11 @@ func main() {
 	if port == "" {
 		port = "8282"
 	}
-	addr := fmt.Sprintf(":%s", port)
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = "localhost"
+	}
+	addr := fmt.Sprintf("%s:%s", host, port)
 	log.Info().Str("addr", addr).Msg("Starting server")
 	srv := &http.Server{
 		Addr:         addr,
@@ -85,8 +100,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
-	err := srv.ListenAndServe()
-	if err != nil {
+	if err = srv.ListenAndServe(); err != nil {
 		log.Error().Msgf("%v", err)
 	}
 

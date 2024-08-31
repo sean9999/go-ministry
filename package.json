@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
-    "build": "parcel build index.html --public-url ./",
+    "clean": "rm -rvf .parcel-cache/*",
+    "build": "npm run clean && parcel build index.html --public-url ./",
     "start": "parcel ./index.html"
   },
   "source": "src/js/main.ts",
