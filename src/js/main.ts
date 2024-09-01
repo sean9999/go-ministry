@@ -2,7 +2,6 @@ import { WEBSOCKET_URL } from './env';
 import { SoccerMessage, SoccerMessageHandler } from './msg';
 
 //  output
-//const oot : HTMLOutputElement = <HTMLOutputElement>document.getElementById("o");
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
 const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
 const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs");
@@ -10,7 +9,6 @@ const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs"
 document.getElementById('f').addEventListener("submit", ev => {
     ev.preventDefault();
     const msg = new SoccerMessage("loose text", ta.value);
-    //ws.send( msg.serialize() );
     sendAndLog(ws, "send", msg);
 });
 
@@ -20,19 +18,12 @@ const sendAndLog = (ws : WebSocket, subject : string, msg : SoccerMessage) => {
 }
 
 const logit = (subject : string, msg : SoccerMessage) => {
-
     const pretty = JSON.stringify(msg.record,null,"\t");
-
     const html = `<div><h4>${subject}</h4><pre>${pretty}</pre></div>`;
-
     const parser = new DOMParser();
-
     const doc =  parser.parseFromString(html, 'text/html');
-
     const element = doc.body.firstChild;
-
     logPoint.appendChild(element);
-    
 }
 
 const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
@@ -52,9 +43,7 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
                 } else {
                     retort.record.subject = "marco";
                 }
-                //logit("send", retort);
-                //ws.send(retort.serialize());
-                sendAndLog(ws, "retort", retort);
+                sendAndLog(ws, "send", retort);
             }
             console.log("soccer mesage", "marco polo", msg.record);
         break;
@@ -67,8 +56,8 @@ const ws = new WebSocket(WEBSOCKET_URL);
 
 ws.addEventListener("message", ev => {
     const msg = SoccerMessage.deserialize(ev.data);
-    handleMessage(msg);
     logit("receive", msg);
+    handleMessage(msg);
 });
 ws.addEventListener("open", console.info);
 ws.addEventListener("error", console.error);

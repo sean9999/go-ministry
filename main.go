@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"time"
@@ -43,6 +44,18 @@ func main() {
 	//	source maps
 	sourceMaps := http.FileServer(http.Dir("."))
 	r.Mount("/src", sourceMaps)
+
+	//	favicon
+	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		fd, err := os.Open("./src/favicon.ico")
+		if err != nil {
+			w.WriteHeader(404)
+			w.Write([]byte("favicon not found"))
+			return
+		}
+		defer fd.Close()
+		io.Copy(w, fd)
+	})
 
 	//	static assets
 	staticAssets := http.FileServer(http.Dir("./dist"))

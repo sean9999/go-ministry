@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -32,8 +31,6 @@ func NewMotherShip() *MotherShip {
 	}
 	return &ms
 }
-
-var addr = flag.String("addr", "localhost:8080", "http service address")
 
 var upg = websocket.Upgrader{}
 
