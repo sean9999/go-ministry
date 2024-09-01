@@ -3,3 +3,27 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: large;
 }
+
+textarea {
+    width: 50%;
+    height: 8em;
+}
+
+#logs h4 {
+    margin-bottom: 0;
+    color: chocolate;
+}
+
+#logs pre {
+    margin-top: 0;
+    font-size: small;
+    font-weight: bold;
+}
+
+#logs>div {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.5);
+}
+
+output {
+    white-space: pre;
+}

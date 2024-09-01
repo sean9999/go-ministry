@@ -23,7 +23,7 @@ export class SoccerMessage{
         return this.record.subject;
     }
     get thread_id() : string | null | undefined {
-        return this.record?.thread_id;
+        return this.record.thread_id;
     }
     get id() : string {
         return this.record.id;

@@ -57,16 +57,33 @@ func main() {
 		mother.Outbox <- msg
 	}()
 
+	//	send marco after 9 seconds
+	go func() {
+		time.Sleep(9 * time.Second)
+		msg := NewMessage()
+		msg.Subject = "marco"
+		msg.Payload = json.RawMessage("1")
+		mother.Outbox <- msg
+	}()
+
 	//	process incoming [Message]s
 	go func() {
 		for msg := range mother.Inbox {
 			log.Logger.Info().Msgf("%v", msg)
 
 			switch msg.Subject {
-			case "marco":
-				polo := msg.Reply()
-				polo.Subject = "polo"
-				err := msg.Conn.WriteJSON(polo)
+			case "marco", "polo":
+				rejoinder := msg.Reply()
+				if msg.Subject == "marco" {
+					rejoinder.Subject = "polo"
+				} else {
+					rejoinder.Subject = "marco"
+				}
+				count := new(int)
+				json.Unmarshal(msg.Payload, count)
+				*count++
+				rejoinder.Payload = json.RawMessage(fmt.Sprintf("%d", *count))
+				err := msg.Conn.WriteJSON(rejoinder)
 				if err != nil {
 					log.Err(err)
 				}
