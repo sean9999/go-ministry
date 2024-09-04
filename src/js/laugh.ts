@@ -4,15 +4,13 @@ import Graph from "graphology";
 import ForceSupervisor from "graphology-layout-force/worker";
 import { Attributes } from "graphology-types";
 import Sigma from "sigma";
-import { uuidv7 } from "uuidv7";
 import { sendMessage } from "./viz";
 
-export type Link = {
-	From : string;
-	To : string;
+function Link(from : string, to : string) : string {
+	return JSON.stringify([from, to]);
 }
 
-export type EdgeMap = Map<Link, string>
+export type EdgeMap = Map<string, string>
 
 export class Registry{
 	graph : Graph
@@ -24,51 +22,27 @@ export class Registry{
 		this.nodes = new Set();
 	}
 	getLink(From : string, To : string) : string {
-		const lnk : Link = {
-			From,
-			To
-		};
+		const lnk = Link(From, To);
 		return this.edges.get(lnk);
 	}
 	addNode(attrs? : Attributes) : string {
-		const label = uuidv7(); 
+		const label = attrs.id;
+		attrs.label = label;
+		attrs._originalSize = attrs.size;
+		attrs._originalColor = attrs.color;
 		this.graph.addNode(label, attrs);
 		this.nodes.add(label);
 		return label;
 	}
 	addEdge(From : string, To : string, attrs? : Attributes) : string {
-		const lnk : Link = {
-			From,
-			To
-		};
-		const id = this.graph.addEdge(From, To);
-		this.edges.set(lnk, id);
-		return id;
+		const lnk = Link(From, To);
+		this.graph.addEdgeWithKey(lnk, From, To, attrs);
+		this.edges.set(lnk, lnk);
+		return lnk;
 	}
 }
 
 export default () => {
-
-	let edgeThickness = 0;
-	const grow = (ts : number) => {
-		edgeThickness++;
-		graph.forEachEdge(e => {
-			graph.setEdgeAttribute(e, "size", edgeThickness);
-		});
-	};
-
-	const changeThings = () => {
-		console.log("change things");
-		graph.forEachNode(nd => {
-			graph.setNodeAttribute(nd, "size", 19);
-		});
-		graph.forEachInEdge(edg => {
-			//graph.setEdgeAttribute(edg, "type", "curvedArrow");
-			requestAnimationFrame(grow);
-		});
-	};
-	document.getElementById("ct").addEventListener("click", changeThings);
-
 
 	// Retrieve the html document for sigma container
 	const container = document.getElementById("sigma-container") as HTMLElement;
@@ -76,14 +50,14 @@ export default () => {
 	// Create a sample graph
 	const graph = new Graph();
 	const registry = new Registry(graph);
-	const n1 = registry.addNode({ x: 0, y: 0, size: 10, color: chroma.random().hex(), "label": "bob" });
-	const n2 = registry.addNode({ x: -5, y: 5, size: 10, color: chroma.random().hex() });
-	const n3 = registry.addNode({ x: 5, y: 5, size: 10, color: chroma.random().hex() });
-	const n4 = registry.addNode({ x: 0, y: 10, size: 10, color: chroma.random().hex() });
-	registry.addEdge(n1, n2, {"color": "#00FF00", "type": "line", "label": "sleeps with"});
+	const n1 = registry.addNode({ x: 0, y: 0, size: 10, color: chroma.random().hex(), "id": "bob" });
+	const n2 = registry.addNode({ x: -5, y: 5, size: 10, color: chroma.random().hex(), "id": "Nancy" });
+	const n3 = registry.addNode({ x: 5, y: 5, size: 10, color: chroma.random().hex(), "id": "Dude" });
+	const n4 = registry.addNode({ x: 0, y: 10, size: 10, color: chroma.random().hex(), "id": "Anne" });
+	registry.addEdge(n1, n2);``
 	registry.addEdge(n2, n4);
-	registry.addEdge(n4, n3, {"color": "#9900FF"});
-	registry.addEdge(n3, n1);
+	registry.addEdge(n4, n3);
+	//registry.addEdge(n3, n1);
 
 	// Create the spring layout and start it
 	const layout = new ForceSupervisor(graph, { isNodeFixed: (_, attr) => attr.highlighted });
@@ -166,15 +140,22 @@ export default () => {
 			color: chroma.random().hex(),
 		};
 
+
+		type cart = {
+			nodeId : string;
+			distance : number;
+		}
 		// Searching the two closest nodes to auto-create an edge to it
 		const closestNodes = graph
 			.nodes()
-			.map((nodeId) => {
+			.map((nodeId : string) => {
+
+
 				const attrs = graph.getNodeAttributes(nodeId);
 				const distance = Math.pow(node.x - attrs.x, 2) + Math.pow(node.y - attrs.y, 2);
 				return { nodeId, distance };
 			})
-			.sort((a, b) => a.distance - b.distance)
+			.sort((a : cart, b: cart) => a.distance - b.distance)
 			.slice(0, 2);
 
 		// We register the new node into graphology instance
@@ -187,13 +168,12 @@ export default () => {
 		});
 
 		//	animate
-		sendMessage(registry, id, closestNodes[0].nodeId).then(() => {
-			return sendMessage(registry, id, closestNodes[1].nodeId);
-		})
-		.then(console.log)
-		.catch(console.error);
+		sendMessage(registry, id, closestNodes[0].nodeId);
+		sendMessage(registry, id, closestNodes[1].nodeId);
 
 	});
+
+	return registry;
 
 };
 

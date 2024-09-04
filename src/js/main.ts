@@ -1,5 +1,8 @@
 import { WEBSOCKET_URL } from './env';
+import laugh from "./laugh";
 import { SoccerMessage, SoccerMessageHandler } from './msg';
+
+const reg = laugh();
 
 //  output
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
@@ -26,6 +29,17 @@ const logit = (subject : string, msg : SoccerMessage) => {
     logPoint.appendChild(element);
 }
 
+type coords = {
+    x : number;
+    y : number;
+}
+
+const randomCoordinates = () : coords => {
+    const x = Math.floor(Math.random()*20) - 10;
+    const y = Math.floor(Math.random()*20) - 10;
+    return {x,y};
+}
+
 const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
 
     //  handle it
@@ -36,7 +50,7 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
         break;
         case "marco":
         case "polo":
-            if (msg.record.payload < 1000) {
+            if (msg.record.payload < 11) {
                 let retort = msg.reply(msg.record.payload+1);
                 if (msg.subject === "marco") {
                     retort.record.subject = "polo";
@@ -46,6 +60,18 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
                 sendAndLog(ws, "send", retort);
             }
             console.log("soccer mesage", "marco polo", msg.record);
+        break;
+        case "command/addPeer":
+            console.log("add this peer", msg.record);
+            const attrs = msg.record.payload;
+            const coords = randomCoordinates();
+            attrs.id = attrs.nick;
+            attrs.x = coords.x;
+            attrs.y = coords.y;
+            attrs.size = 9;
+            attrs.color = "green";
+            const xx = reg.addNode(attrs);
+            console.log({attrs, xx});
         break;
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);
@@ -63,10 +89,5 @@ ws.addEventListener("open", console.info);
 ws.addEventListener("error", console.error);
 ws.addEventListener("close", console.debug);
 
-setInterval(() => {
-    const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
-    
-    sendAndLog(ws, "init-send", msg);
-    //ws.send( msg.serialize() );
-    //logit("send", msg);
-}, 30511);
+const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
+sendAndLog(ws, "hello", msg);

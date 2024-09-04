@@ -1,4 +1,7 @@
+import Graph from "graphology";
 import { Registry } from "./laugh";
+
+const TICK = 333;
 
 const waitFor = (ms : number) => {
     return new Promise(resolve => {
@@ -6,34 +9,40 @@ const waitFor = (ms : number) => {
     });
 };
 
-const randomColour = () : string => {
-    let r = "#";
-    for (let i=0;i<3;i++) {
-        let letter = Math.floor(Math.random()*16).toString(16); 
-        r += `${letter}${letter}`;
-    }
-    return r
+const pulseNode = async (g : Graph, id : string) => {
+    const originalColour = g.getNodeAttribute(id, "_originalColor");
+    const originalSize = g.getNodeAttribute(id, "_originalSize");
+    g.setNodeAttribute(id, "size", 17);
+    g.setNodeAttribute(id, "color", "purple");
+    await waitFor(TICK);
+    g.setNodeAttribute(id, "size", originalSize);
+    g.setNodeAttribute(id, "color", originalColour);
+    return Promise.resolve(true);
+}
+
+const pulseEdge = async (reg : Registry, fromId : string, toId : string) => {
+    const e = reg.getLink(fromId, toId);
+    const graph = reg.graph;
+    const originalColor = graph.getEdgeAttribute(e, "color");
+    const originalSize = graph.getEdgeAttribute(e, "size");
+    graph.setEdgeAttribute(e, "size", 7);
+    graph.setEdgeAttribute(e, "color", "purple");
+    await waitFor(TICK);
+    graph.setEdgeAttribute(e, "size", originalSize);
+    graph.setEdgeAttribute(e, "color", originalColor);
+    return Promise.resolve(true);    
 }
 
 const sendMessage = async (reg : Registry, fromId : string, toId : string) => {
-    //const e  = graph.edge(fromId, toId);
-    
     const e = reg.getLink(fromId, toId);
     const graph = reg.graph;
     if (!e) {
-        console.log({fromId, toId, reg});
+        console.warn({fromId, toId, reg});
         return Promise.reject(e);
     }
-    graph.setNodeAttribute(fromId, "color", "purple");
-    graph.setNodeAttribute(toId, "color", "purple");
-    graph.setEdgeAttribute(e, "size", 7);
-    await waitFor(100);
-    for (let i=0;i<10;i++) {
-        await waitFor(100);
-        graph.setEdgeAttribute(e, "color", randomColour());
-    }
-    graph.setEdgeAttribute(e, "color", "gray");
-    graph.setEdgeAttribute(e, "size", 2);
+    await pulseNode(graph, fromId);
+    await pulseEdge(reg, fromId, toId);
+    await pulseNode(graph, toId);
     return Promise.resolve(e);
 }
 

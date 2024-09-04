@@ -3,10 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"time"
+
+	_ "embed"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -14,6 +15,9 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
+
+//go:embed src/favicon.ico
+var faviconBytes []byte
 
 func main() {
 
@@ -47,19 +51,24 @@ func main() {
 
 	//	favicon
 	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		fd, err := os.Open("./src/favicon.ico")
-		if err != nil {
-			w.WriteHeader(404)
-			w.Write([]byte("favicon not found"))
-			return
-		}
-		defer fd.Close()
-		io.Copy(w, fd)
+		w.Write(faviconBytes)
 	})
 
 	//	static assets
 	staticAssets := http.FileServer(http.Dir("./dist"))
 	r.Handle("/*", staticAssets)
+
+	//	load graph entities
+	peers, err := loadAllPeerRecords()
+	if err != nil {
+		panic(err)
+	}
+	for _, peer := range peers {
+		msg := NewMessage()
+		msg.Payload = peer
+		msg.Subject = "command/addPeer"
+		mother.Outbox <- msg
+	}
 
 	//	send a hello after 5 seconds
 	go func() {
@@ -82,7 +91,7 @@ func main() {
 	//	process incoming [Message]s
 	go func() {
 		for msg := range mother.Inbox {
-			log.Logger.Info().Msgf("%v", msg)
+			log.Logger.Info().Str("subject", msg.Subject).Str("payload", string(msg.Payload)).Msg("message receive")
 
 			switch msg.Subject {
 			case "marco", "polo":
@@ -92,10 +101,10 @@ func main() {
 				} else {
 					rejoinder.Subject = "marco"
 				}
-				count := new(int)
-				json.Unmarshal(msg.Payload, count)
-				*count++
-				rejoinder.Payload = json.RawMessage(fmt.Sprintf("%d", *count))
+				var count int
+				json.Unmarshal(msg.Payload, &count)
+				count++
+				rejoinder.Payload = json.RawMessage(fmt.Sprintf("%d", count))
 				err := msg.Conn.WriteJSON(rejoinder)
 				if err != nil {
 					log.Err(err)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 
@@ -38,11 +37,8 @@ var upg = websocket.Upgrader{}
 func (m *MotherShip) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	m.Logger.Info().Msg("opening websocket connection")
-
 	conn, _ := upg.Upgrade(w, r, nil)
-
 	m.Connections[conn] = true
-	fmt.Println("length of Connections", len(m.Connections))
 
 	defer func() {
 		m.Connections[conn] = false
@@ -54,8 +50,6 @@ func (m *MotherShip) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//	send outgoing [Message]s
 	go func() {
 		for msg := range m.Outbox {
-			fmt.Println("outgoing", msg)
-			fmt.Println("length of Connections", len(m.Connections))
 			if msg.Conn != nil {
 				//	unicast
 				msg.Conn.WriteJSON(msg)
@@ -70,17 +64,14 @@ func (m *MotherShip) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	//	receive
+	//	receive [Message]s over websocket and queue them on Inbox
 	var msg Message
 	for {
 		err := conn.ReadJSON(&msg)
-		m.Logger.Info().Str("subject", msg.Subject).Str("uuid", msg.ID.String())
-
+		m.Logger.Info().Str("subject", msg.Subject).Str("uuid", msg.ID.String()).Msg("receive message")
 		if err != nil {
-			fmt.Println("error reading websocket conn", err)
 			break
 		}
-
 		msg.Conn = conn
 		m.Inbox <- msg
 	}
