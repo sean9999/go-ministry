@@ -54,7 +54,7 @@ export default () => {
 	const n2 = registry.addNode({ x: -5, y: 5, size: 10, color: chroma.random().hex(), "id": "Nancy" });
 	const n3 = registry.addNode({ x: 5, y: 5, size: 10, color: chroma.random().hex(), "id": "Dude" });
 	const n4 = registry.addNode({ x: 0, y: 10, size: 10, color: chroma.random().hex(), "id": "Anne" });
-	registry.addEdge(n1, n2);``
+	registry.addEdge(n1, n2);
 	registry.addEdge(n2, n4);
 	registry.addEdge(n4, n3);
 	//registry.addEdge(n3, n1);
@@ -149,8 +149,6 @@ export default () => {
 		const closestNodes = graph
 			.nodes()
 			.map((nodeId : string) => {
-
-
 				const attrs = graph.getNodeAttributes(nodeId);
 				const distance = Math.pow(node.x - attrs.x, 2) + Math.pow(node.y - attrs.y, 2);
 				return { nodeId, distance };

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -58,8 +59,11 @@ func main() {
 	staticAssets := http.FileServer(http.Dir("./dist"))
 	r.Handle("/*", staticAssets)
 
+	//	add some nodes
+	n := newNode(rand.Reader)
+
 	//	load graph entities
-	peers, err := loadAllPeerRecords()
+	peers, err := loadAllNodeRecords()
 	if err != nil {
 		panic(err)
 	}
@@ -67,6 +71,16 @@ func main() {
 		msg := NewMessage()
 		msg.Payload = peer
 		msg.Subject = "command/addPeer"
+		mother.Outbox <- msg
+	}
+	rels, err := loadAllRelationshipRecords()
+	if err != nil {
+		panic(err)
+	}
+	for _, rel := range rels {
+		msg := NewMessage()
+		msg.Payload = rel
+		msg.Subject = "command/addRelationship"
 		mother.Outbox <- msg
 	}
 

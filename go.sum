@@ -30,16 +30,12 @@ github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZN
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.33.0 h1:1cU2KZkvPxNyfgEmhHAz/1A9Bz+llsdYzklWFzgp0r8=
 github.com/rs/zerolog v1.33.0/go.mod h1:/7mN4D5sKwJLZQ2b/znpjC3/GQWY/xaDXUM0kKWRHss=
-github.com/sean9999/go-oracle v1.2.2 h1:wz7/Iaz6UUr5wOaX3fYUiDmulVAfuScc90ptdNNp/v8=
-github.com/sean9999/go-oracle v1.2.2/go.mod h1:INoDnptKPtwuF4s9rllGzQXAstp9EQYf/KOo8LJadJw=
 github.com/sean9999/go-oracle v1.4.2 h1:C4cfwwfpPYzkUk2o/2RLU/aahh/bIlq+B6qXRK7hcT4=
 github.com/sean9999/go-oracle v1.4.2/go.mod h1:azuff/rNaGLetmLHh+WFrhfXsgqybN3oJHKhq66zDAk=
 github.com/sean9999/go-real-fs v0.0.4 h1:ERe+IV10m8eouP5YnB5Zr0B60rzQ8ljGcLurET3uEdY=
 github.com/sean9999/go-real-fs v0.0.4/go.mod h1:CC9SxhImgup58eZAwgTbNc1JiImUzt2vCNCfYphZh9Y=
 github.com/sean9999/harebrain v0.0.5 h1:GOFFs3M9UD3NHFuqE0Skm9oaJX6jaf8cmrq+OVvTHFs=
 github.com/sean9999/harebrain v0.0.5/go.mod h1:coSdvfFNQ7Pimj8MtAFuzMiwvftY/Nw23msBIIbBr/I=
-github.com/sean9999/polity v0.1.2 h1:IYhRM8yk0SQ/nfH60Mn58oST/BhWDC3agI1UQqz0gsA=
-github.com/sean9999/polity v0.1.2/go.mod h1:6gYgEzIqUI83n9p2h/Uq5/QZQBt0WVhcDsujhLqJIN4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.5.2 h1:xuMeJ0Sdp5ZMRXx/aWO6RZxdr3beISkG5/G/aIRr3pY=
 github.com/stretchr/objx v0.5.2/go.mod h1:FRsXN1f5AsAjCGJKqEizvkpNtU+EGNCLh3NxZ/8L+MA=

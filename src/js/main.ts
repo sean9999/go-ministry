@@ -62,7 +62,6 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             console.log("soccer mesage", "marco polo", msg.record);
         break;
         case "command/addPeer":
-            console.log("add this peer", msg.record);
             const attrs = msg.record.payload;
             const coords = randomCoordinates();
             attrs.id = attrs.nick;
@@ -71,7 +70,10 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             attrs.size = 9;
             attrs.color = "green";
             const xx = reg.addNode(attrs);
-            console.log({attrs, xx});
+        break;
+        case "command/addRelationship":
+            const [from, to] = msg.record.payload;
+            reg.addEdge(from, to);
         break;
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);
