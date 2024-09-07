@@ -1,5 +1,5 @@
 import Graph from "graphology";
-import { Registry } from "./laugh";
+import { Registry } from "./graph";
 
 const TICK = 333;
 

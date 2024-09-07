@@ -10,13 +10,13 @@ import (
 func saveNode(n *node) error {
 	db := harebrain.NewDatabase()
 	db.Open("data")
-	return db.Table("nodes").Insert(n)
+	return db.Table("peers").Insert(n)
 }
 
 func loadAllNodeRecords() ([][]byte, error) {
 	db := harebrain.NewDatabase()
 	db.Open("data")
-	kv, err := db.Table("nodes").GetAll()
+	kv, err := db.Table("peers").GetAll()
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +73,25 @@ func loadAllNodes() ([]*node, error) {
 		peers[i] = &pbuf
 	}
 	return peers, nil
+}
+
+func saveRelationshipSkinny(rel *relationship) error {
+	db := harebrain.NewDatabase()
+	db.Open("data")
+	return db.Table("rels").Insert(rel)
+}
+
+func relationshipExists(rel *relationship) bool {
+	db := harebrain.NewDatabase()
+	db.Open("data")
+	_, err := db.Table("rels").Get(rel.Hash())
+	return err == nil
+}
+
+func removeRelationship(rel *relationship) {
+	db := harebrain.NewDatabase()
+	db.Open("data")
+	db.Table("rels").Delete(rel.Hash())
 }
 
 func saveRelationship(j1, j2 json.RawMessage) error {

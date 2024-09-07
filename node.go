@@ -14,8 +14,18 @@ type node struct {
 	Attrs map[string]any `json:"attrs,omitempty"`
 }
 
-func (n node) Hash() string {
-	return fmt.Sprintf(n.Peer.Nickname(), ".json")
+func (n *node) AsMessage() (*Message, error) {
+	m := NewMessage()
+	j, err := n.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	m.Payload = j
+	return &m, nil
+}
+
+func (n *node) Hash() string {
+	return fmt.Sprintf("%s.json", n.Peer.Nickname())
 }
 
 func (n *node) MarshalJSON() ([]byte, error) {
@@ -28,7 +38,7 @@ func (n *node) MarshalJSON() ([]byte, error) {
 	for k, v := range n.Attrs {
 		m[k] = v
 	}
-	return json.Marshal(m)
+	return json.MarshalIndent(m, "", "\t")
 }
 
 func (n *node) UnmarshalJSON(b []byte) error {

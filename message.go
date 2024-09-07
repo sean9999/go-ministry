@@ -54,6 +54,15 @@ func NewMessage() Message {
 	return msg
 }
 
+func (m *Message) SetPayload(p json.Marshaler) error {
+	j, err := p.MarshalJSON()
+	if err != nil {
+		return err
+	}
+	m.Payload = j
+	return nil
+}
+
 func (m *Message) Reply() Message {
 	r := NewMessage()
 	if m.ThreadID == nil {

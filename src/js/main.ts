@@ -1,13 +1,49 @@
 import { WEBSOCKET_URL } from './env';
-import laugh from "./laugh";
+import init, { Link } from "./graph";
 import { SoccerMessage, SoccerMessageHandler } from './msg';
-
-const reg = laugh();
-
-//  output
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
-const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
+//const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
 const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs");
+const graphContainer : HTMLDivElement = <HTMLDivElement>document.getElementById('sigma-container');
+const btnAddNode : HTMLButtonElement = <HTMLButtonElement>document.getElementById('aan');
+
+const f1 : HTMLSelectElement = <HTMLSelectElement>document.getElementById('f1');
+const f2 : HTMLSelectElement = <HTMLSelectElement>document.getElementById('f2');
+
+const ws = new WebSocket(WEBSOCKET_URL);
+
+
+const {registry} = init(graphContainer, ws);
+
+
+btnAddNode.addEventListener("click", ev => {
+    const msg = new SoccerMessage("please/addNode");
+    console.log(ev,msg);
+    ws.send(msg.serialize());
+});
+
+const rebuildFriends = () => {
+    for (const child of f1.children) {
+        f1.removeChild(child)
+    }
+    for (const child of f2.children) {
+        f2.removeChild(child)
+    }
+    registry.graph.nodes().forEach(nodeId => {
+        let opt = document.createElement("option")
+        opt.value = nodeId;
+        opt.innerText = nodeId;
+        let opt2 = opt.cloneNode(true);
+        f1.append(opt);
+        f2.append(opt2);
+    });
+};
+
+document.getElementById('makefriends').addEventListener("click", ev => {
+    ev.preventDefault();
+    const msg = new SoccerMessage("please/addRelationship", [f1.value, f2.value]);
+    ws.send(msg.serialize());
+});
 
 document.getElementById('f').addEventListener("submit", ev => {
     ev.preventDefault();
@@ -69,18 +105,23 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             attrs.y = coords.y;
             attrs.size = 9;
             attrs.color = "green";
-            const xx = reg.addNode(attrs);
+            registry.addNode(attrs);
+            rebuildFriends();
         break;
         case "command/addRelationship":
             const [from, to] = msg.record.payload;
-            reg.addEdge(from, to);
+            registry.addEdge(from, to);
+        break;
+        case "command/removeRelationship":
+            console.info("remove link", msg.record);
+            let lnk = Link(msg.record.payload[0], msg.record.payload[1]);
+            registry.removeLink(lnk);
         break;
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);
     }
 }
 
-const ws = new WebSocket(WEBSOCKET_URL);
 
 ws.addEventListener("message", ev => {
     const msg = SoccerMessage.deserialize(ev.data);
@@ -91,5 +132,3 @@ ws.addEventListener("open", console.info);
 ws.addEventListener("error", console.error);
 ws.addEventListener("close", console.debug);
 
-const msg = new SoccerMessage("hello", Math.floor(Math.random()*10000));
-sendAndLog(ws, "hello", msg);

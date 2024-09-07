@@ -6,7 +6,7 @@ import { Attributes } from "graphology-types";
 import Sigma from "sigma";
 import { sendMessage } from "./viz";
 
-function Link(from : string, to : string) : string {
+export function Link(from : string, to : string) : string {
 	return JSON.stringify([from, to]);
 }
 
@@ -25,6 +25,10 @@ export class Registry{
 		const lnk = Link(From, To);
 		return this.edges.get(lnk);
 	}
+	removeLink(lnk : string) {
+		this.edges.delete(lnk);
+		this.graph.dropEdge(lnk);
+	}
 	addNode(attrs? : Attributes) : string {
 		const label = attrs.id;
 		attrs.label = label;
@@ -42,24 +46,10 @@ export class Registry{
 	}
 }
 
-export default () => {
-
-	// Retrieve the html document for sigma container
-	const container = document.getElementById("sigma-container") as HTMLElement;
-
-	// Create a sample graph
+export default (container : HTMLElement, ws : WebSocket) => {
 	const graph = new Graph();
 	const registry = new Registry(graph);
-	const n1 = registry.addNode({ x: 0, y: 0, size: 10, color: chroma.random().hex(), "id": "bob" });
-	const n2 = registry.addNode({ x: -5, y: 5, size: 10, color: chroma.random().hex(), "id": "Nancy" });
-	const n3 = registry.addNode({ x: 5, y: 5, size: 10, color: chroma.random().hex(), "id": "Dude" });
-	const n4 = registry.addNode({ x: 0, y: 10, size: 10, color: chroma.random().hex(), "id": "Anne" });
-	registry.addEdge(n1, n2);
-	registry.addEdge(n2, n4);
-	registry.addEdge(n4, n3);
-	//registry.addEdge(n3, n1);
 
-	// Create the spring layout and start it
 	const layout = new ForceSupervisor(graph, { isNodeFixed: (_, attr) => attr.highlighted });
 	layout.start();
 
@@ -71,12 +61,7 @@ export default () => {
 			curve: EdgeCurvedArrowProgram,
 		},
 	});
-
-	//
-	// Drag'n'drop feature
-	// ~~~~~~~~~~~~~~~~~~~
-	//
-
+	
 	// State for drag'n'drop
 	let draggedNode: string | null = null;
 	let isDragging = false;
@@ -171,7 +156,11 @@ export default () => {
 
 	});
 
-	return registry;
+
+	return {
+		graph,
+		registry,
+		renderer
+	}
 
 };
-

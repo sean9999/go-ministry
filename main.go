@@ -59,9 +59,6 @@ func main() {
 	staticAssets := http.FileServer(http.Dir("./dist"))
 	r.Handle("/*", staticAssets)
 
-	//	add some nodes
-	n := newNode(rand.Reader)
-
 	//	load graph entities
 	peers, err := loadAllNodeRecords()
 	if err != nil {
@@ -84,23 +81,23 @@ func main() {
 		mother.Outbox <- msg
 	}
 
-	//	send a hello after 5 seconds
-	go func() {
-		time.Sleep(5 * time.Second)
-		msg := NewMessage()
-		msg.Subject = "jazz"
-		msg.Payload = json.RawMessage(fmt.Sprintf("%q", "all your base are belong to us"))
-		mother.Outbox <- msg
-	}()
+	// //	send a hello after 5 seconds
+	// go func() {
+	// 	time.Sleep(5 * time.Second)
+	// 	msg := NewMessage()
+	// 	msg.Subject = "jazz"
+	// 	msg.Payload = json.RawMessage(fmt.Sprintf("%q", "all your base are belong to us"))
+	// 	mother.Outbox <- msg
+	// }()
 
-	//	send marco after 9 seconds
-	go func() {
-		time.Sleep(9 * time.Second)
-		msg := NewMessage()
-		msg.Subject = "marco"
-		msg.Payload = json.RawMessage("1")
-		mother.Outbox <- msg
-	}()
+	// //	send marco after 9 seconds
+	// go func() {
+	// 	time.Sleep(9 * time.Second)
+	// 	msg := NewMessage()
+	// 	msg.Subject = "marco"
+	// 	msg.Payload = json.RawMessage("1")
+	// 	mother.Outbox <- msg
+	// }()
 
 	//	process incoming [Message]s
 	go func() {
@@ -123,6 +120,36 @@ func main() {
 				if err != nil {
 					log.Err(err)
 				}
+			case "please/addNode":
+				n := newNode(rand.Reader)
+				n.Attrs["nancy"] = "reagan"
+				msg := NewMessage()
+				msg.Subject = "command/addPeer"
+				peerAsJson, err := n.MarshalJSON()
+				if err != nil {
+					panic(err)
+				}
+				msg.Payload = peerAsJson
+				saveNode(n)
+				mother.Outbox <- msg
+
+			case "please/addRelationship":
+				r := new(relationship)
+				err := json.Unmarshal(msg.Payload, r)
+				if err != nil {
+					panic(err)
+				}
+
+				if relationshipExists(r) {
+					removeRelationship(r)
+					msg.Subject = "command/removeRelationship"
+				} else {
+					saveRelationshipSkinny(r)
+					msg.Subject = "command/addRelationship"
+				}
+
+				mother.Outbox <- msg
+
 			case "hello":
 				log.Info().Str("subject", msg.Subject).Str("uuid", msg.ID.String()).Msgf("%v", msg.Payload)
 				msg2 := msg.Reply()
