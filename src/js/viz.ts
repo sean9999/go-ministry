@@ -1,7 +1,7 @@
 import Graph from "graphology";
 import { Registry } from "./graph";
 
-const TICK = 333;
+const TICK = 250;
 
 const waitFor = (ms : number) => {
     return new Promise(resolve => {

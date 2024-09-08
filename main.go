@@ -88,21 +88,22 @@ func main() {
 	// }()
 
 	//	update node
-	go func() {
-		time.Sleep(15011 * time.Millisecond)
-		e := g.RandomEdge()
-		msg := graph.NewMessage()
-		msg.From = e.From()
-		msg.To = e.To()
-		attrs := graph.NodeAttributes{
-			"size":  25,
-			"color": "orange",
-			"label": "dude",
+
+	marf := func() {
+		for range 5 {
+			time.Sleep(997 * time.Millisecond)
+			e := g.RandomEdge()
+			msg := graph.NewMessage()
+			msg.From = e.From()
+			msg.To = e.To()
+			attrs := graph.NodeAttributes{
+				"color": "orange",
+			}
+			msg.SetPayload(attrs)
+			msg.Subject = "command/updateNode"
+			g.Broker.Outbox <- msg
 		}
-		msg.SetPayload(attrs)
-		msg.Subject = "command/updateNode"
-		g.Broker.Outbox <- msg
-	}()
+	}
 
 	//	process incoming [Message]s
 	go func() {
@@ -179,6 +180,7 @@ func main() {
 					msg.Subject = "command/addRelationship"
 					g.Broker.Outbox <- msg
 				}
+				go marf()
 				// err = g.Store.Zip("cool.zip")
 				// fmt.Println("ZIP", err)
 

@@ -1,7 +1,7 @@
 import { WEBSOCKET_URL } from './env';
 import init, { Link } from "./graph";
 import { SoccerMessage, SoccerMessageHandler } from './msg';
-import { pulseEdge, pulseNode } from './viz';
+import { pulseEdge, pulseNode, sendMessage } from './viz';
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
 //const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
 const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs");
@@ -125,8 +125,10 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             pulseEdge(registry, msg.record.payload[0], msg.record.payload[1])
         break;
         case "command/updateNode":
-            let id = msg.record.to;
-            registry.updateNode(id, msg.record.payload);
+            sendMessage(registry, msg.record.from, msg.record.to).then(() => {
+                return registry.updateNode(msg.record.to, msg.record.payload);
+            }).then(console.log);
+            
 
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);
