@@ -1,20 +1,33 @@
-package main
+package graph
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 
 	"github.com/sean9999/go-oracle"
 )
 
-type node struct {
-	Peer  oracle.Peer    `json:"peer"`
-	Attrs map[string]any `json:"attrs,omitempty"`
+type NodeAttributes map[string]any
+
+func (attr NodeAttributes) MarshalJSON() ([]byte, error) {
+	m := map[string]any{}
+	maps.Copy(m, attr)
+	return json.Marshal(m)
 }
 
-func (n *node) AsMessage() (*Message, error) {
+func (a1 *NodeAttributes) Combine(a2 NodeAttributes) {
+	maps.Copy(*a1, a2)
+}
+
+type Node struct {
+	Peer  oracle.Peer    `json:"peer"`
+	Attrs NodeAttributes `json:"attrs,omitempty"`
+}
+
+func (n *Node) AsMessage() (*Message, error) {
 	m := NewMessage()
 	j, err := n.MarshalJSON()
 	if err != nil {
@@ -24,11 +37,11 @@ func (n *node) AsMessage() (*Message, error) {
 	return &m, nil
 }
 
-func (n *node) Hash() string {
+func (n *Node) Hash() string {
 	return fmt.Sprintf("%s.json", n.Peer.Nickname())
 }
 
-func (n *node) MarshalJSON() ([]byte, error) {
+func (n *Node) MarshalJSON() ([]byte, error) {
 	m := make(map[string]any, len(n.Attrs)+2)
 	for k, v := range n.Peer.AsMap() {
 		//	pub: hex of pubkey
@@ -41,7 +54,7 @@ func (n *node) MarshalJSON() ([]byte, error) {
 	return json.MarshalIndent(m, "", "\t")
 }
 
-func (n *node) UnmarshalJSON(b []byte) error {
+func (n *Node) UnmarshalJSON(b []byte) error {
 	var m map[string]any
 	err := json.Unmarshal(b, &m)
 	if err != nil {
@@ -62,17 +75,17 @@ func (n *node) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-func (n *node) MarshalBinary() ([]byte, error) {
+func (n *Node) MarshalBinary() ([]byte, error) {
 	return n.MarshalJSON()
 }
 
-func (p *node) UnmarshalBinary(b []byte) error {
+func (p *Node) UnmarshalBinary(b []byte) error {
 	return p.UnmarshalJSON(b)
 }
 
-func newNode(randy io.Reader) *node {
+func newNode(randy io.Reader) *Node {
 	p := oracle.New(randy).AsPeer()
-	n := node{
+	n := Node{
 		Peer:  p,
 		Attrs: map[string]any{},
 	}

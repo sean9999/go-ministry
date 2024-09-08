@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/sean9999/go-ministry/graph"
 )
 
 //go:embed src/favicon.ico
@@ -39,12 +39,12 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	// WebSocket endpoint
-	mother := NewMotherShip()
+	g := graph.NewGraph()
 	ws_path := os.Getenv("WS_PATH")
 	if ws_path == "" {
 		ws_path = "ws"
 	}
-	r.Mount(fmt.Sprintf("/%s", ws_path), mother)
+	r.Mount(fmt.Sprintf("/%s", ws_path), g.Broker)
 
 	//	source maps
 	sourceMaps := http.FileServer(http.Dir("."))
@@ -58,28 +58,6 @@ func main() {
 	//	static assets
 	staticAssets := http.FileServer(http.Dir("./dist"))
 	r.Handle("/*", staticAssets)
-
-	//	load graph entities
-	peers, err := loadAllNodeRecords()
-	if err != nil {
-		panic(err)
-	}
-	for _, peer := range peers {
-		msg := NewMessage()
-		msg.Payload = peer
-		msg.Subject = "command/addPeer"
-		mother.Outbox <- msg
-	}
-	rels, err := loadAllRelationshipRecords()
-	if err != nil {
-		panic(err)
-	}
-	for _, rel := range rels {
-		msg := NewMessage()
-		msg.Payload = rel
-		msg.Subject = "command/addRelationship"
-		mother.Outbox <- msg
-	}
 
 	// //	send a hello after 5 seconds
 	// go func() {
@@ -99,9 +77,36 @@ func main() {
 	// 	mother.Outbox <- msg
 	// }()
 
+	//	pulse node
+	// go func() {
+	// 	time.Sleep(3001 * time.Millisecond)
+	// 	n := g.RandomNode()
+	// 	msg := graph.NewMessage()
+	// 	msg.Payload = json.RawMessage(fmt.Sprintf("%q", n.Peer.Nickname()))
+	// 	msg.Subject = "command/pulseNode"
+	// 	g.Broker.Outbox <- msg
+	// }()
+
+	//	update node
+	go func() {
+		time.Sleep(15011 * time.Millisecond)
+		e := g.RandomEdge()
+		msg := graph.NewMessage()
+		msg.From = e.From()
+		msg.To = e.To()
+		attrs := graph.NodeAttributes{
+			"size":  25,
+			"color": "orange",
+			"label": "dude",
+		}
+		msg.SetPayload(attrs)
+		msg.Subject = "command/updateNode"
+		g.Broker.Outbox <- msg
+	}()
+
 	//	process incoming [Message]s
 	go func() {
-		for msg := range mother.Inbox {
+		for msg := range g.Broker.Inbox {
 			log.Logger.Info().Str("subject", msg.Subject).Str("payload", string(msg.Payload)).Msg("message receive")
 
 			switch msg.Subject {
@@ -121,40 +126,62 @@ func main() {
 					log.Err(err)
 				}
 			case "please/addNode":
-				n := newNode(rand.Reader)
-				n.Attrs["nancy"] = "reagan"
-				msg := NewMessage()
+				n := g.AddNode()
+				msg := graph.NewMessage()
 				msg.Subject = "command/addPeer"
 				peerAsJson, err := n.MarshalJSON()
 				if err != nil {
 					panic(err)
 				}
 				msg.Payload = peerAsJson
-				saveNode(n)
-				mother.Outbox <- msg
+				g.Broker.Outbox <- msg
 
 			case "please/addRelationship":
-				r := new(relationship)
-				err := json.Unmarshal(msg.Payload, r)
+				var names [2]string
+				err := json.Unmarshal(msg.Payload, &names)
 				if err != nil {
 					panic(err)
 				}
-
-				if relationshipExists(r) {
-					removeRelationship(r)
-					msg.Subject = "command/removeRelationship"
-				} else {
-					saveRelationshipSkinny(r)
-					msg.Subject = "command/addRelationship"
+				err = g.AddEdge(names[0], names[1])
+				if err != nil {
+					panic(err)
 				}
-
-				mother.Outbox <- msg
+				msg.Subject = "command/addRelationship"
+				g.Broker.Outbox <- msg
 
 			case "hello":
 				log.Info().Str("subject", msg.Subject).Str("uuid", msg.ID.String()).Msgf("%v", msg.Payload)
 				msg2 := msg.Reply()
 				msg2.Subject = "goodbye"
-				mother.Outbox <- msg2
+				g.Broker.Outbox <- msg2
+
+			case "hello/imAwake":
+
+				//	load graph entities
+				records, err := g.Store.Nodes.AllRecords()
+				if err != nil {
+					panic(err)
+				}
+				for _, record := range records {
+					msg := graph.NewMessage()
+					msg.Payload = record
+					msg.Subject = "command/addPeer"
+					g.Broker.Outbox <- msg
+				}
+
+				records, err = g.Store.Edges.AllRecords()
+				if err != nil {
+					panic(err)
+				}
+				for _, record := range records {
+					msg := graph.NewMessage()
+					msg.Payload = record
+					msg.Subject = "command/addRelationship"
+					g.Broker.Outbox <- msg
+				}
+				// err = g.Store.Zip("cool.zip")
+				// fmt.Println("ZIP", err)
+
 			default:
 				log.Info().Str("subject", msg.Subject).Msg("default case")
 			}

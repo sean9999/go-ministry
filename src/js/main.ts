@@ -1,6 +1,7 @@
 import { WEBSOCKET_URL } from './env';
 import init, { Link } from "./graph";
 import { SoccerMessage, SoccerMessageHandler } from './msg';
+import { pulseEdge, pulseNode } from './viz';
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
 //const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
 const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs");
@@ -12,9 +13,7 @@ const f2 : HTMLSelectElement = <HTMLSelectElement>document.getElementById('f2');
 
 const ws = new WebSocket(WEBSOCKET_URL);
 
-
 const {registry} = init(graphContainer, ws);
-
 
 btnAddNode.addEventListener("click", ev => {
     const msg = new SoccerMessage("please/addNode");
@@ -78,6 +77,8 @@ const randomCoordinates = () : coords => {
 
 const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
 
+    console.log("receiving soccer message", msg.record);
+
     //  handle it
     switch (msg.subject) {
         case "hello":
@@ -117,6 +118,16 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             let lnk = Link(msg.record.payload[0], msg.record.payload[1]);
             registry.removeLink(lnk);
         break;
+        case "command/pulseNode":
+            pulseNode(registry.graph, msg.record.payload);
+        break;
+        case "command/pulseEdge":
+            pulseEdge(registry, msg.record.payload[0], msg.record.payload[1])
+        break;
+        case "command/updateNode":
+            let id = msg.record.to;
+            registry.updateNode(id, msg.record.payload);
+
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);
     }
@@ -132,3 +143,9 @@ ws.addEventListener("open", console.info);
 ws.addEventListener("error", console.error);
 ws.addEventListener("close", console.debug);
 
+const awaken = () => {
+    const msg = new SoccerMessage("hello/imAwake");
+    sendAndLog(ws, "send", msg);
+};
+
+setTimeout(awaken, 997);

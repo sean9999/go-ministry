@@ -1,4 +1,4 @@
-package main
+package graph
 
 import (
 	"encoding/json"
@@ -15,6 +15,8 @@ var ErrID = fmt.Errorf("%w: ID", ErrMessage)
 var ErrPayload = fmt.Errorf("%w: payload", ErrMessage)
 
 type Message struct {
+	From     string          `json:"from,omitempty"`
+	To       string          `json:"to,omitempty"`
 	ID       *uuid.UUID      `json:"id"`
 	ThreadID *uuid.UUID      `json:"thread_id,omitempty"`
 	Subject  string          `json:"subject"`
@@ -63,8 +65,16 @@ func (m *Message) SetPayload(p json.Marshaler) error {
 	return nil
 }
 
+func (m *Message) GetPayload() any {
+	var val any
+	json.Unmarshal(m.Payload, &val)
+	return val
+}
+
 func (m *Message) Reply() Message {
 	r := NewMessage()
+	r.To = m.From
+	m.From = r.To
 	if m.ThreadID == nil {
 		r.ThreadID = m.ID
 	} else {

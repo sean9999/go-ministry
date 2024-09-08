@@ -1,4 +1,4 @@
-package main
+package graph
 
 import (
 	"net/http"
@@ -8,8 +8,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// MotherShip brokers websocket connections and channels
-type MotherShip struct {
+// Broker brokers websocket connections and channels
+type Broker struct {
 	Connections map[*websocket.Conn]bool
 	Logger      zerolog.Logger
 	Inbox       chan Message
@@ -17,12 +17,12 @@ type MotherShip struct {
 }
 
 // constructor
-func NewMotherShip() *MotherShip {
+func NewMotherShip() *Broker {
 
 	z := zerolog.New(os.Stdout)
 	z.Level(zerolog.DebugLevel)
 
-	ms := MotherShip{
+	ms := Broker{
 		Connections: map[*websocket.Conn]bool{},
 		Logger:      z,
 		Inbox:       make(chan Message, 1024),
@@ -34,7 +34,7 @@ func NewMotherShip() *MotherShip {
 var upg = websocket.Upgrader{}
 
 // our main http.Handler, mounted to "/ws" probably
-func (m *MotherShip) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	m.Logger.Info().Msg("opening websocket connection")
 	conn, _ := upg.Upgrade(w, r, nil)

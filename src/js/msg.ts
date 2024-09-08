@@ -3,6 +3,8 @@ import { uuidv7 } from "uuidv7";
 export type SoccerMessageHandler = (m: SoccerMessage) => void;
 
 export type SoccerRecord = {
+    from?: string;
+    to?: string;
     id: string;
     thread_id?: string;
     subject: string;
@@ -11,6 +13,9 @@ export type SoccerRecord = {
 
 export class SoccerMessage{
     public record : SoccerRecord;
+
+    //  to do: simplify constructor to just make a blank object
+    //  allow modification by simply setting properties.
     constructor(subj="", pay=null){
         this.record = {
             id: uuidv7(),
@@ -18,6 +23,14 @@ export class SoccerMessage{
             subject: subj,
             payload: pay
         };
+    }
+
+    //  to do: these accessors are not needed. It just makes everything to complicated
+    get from() : string {
+        return this.record.from;
+    }
+    get to() : string {
+        return this.record.to;
     }
     get subject() : string {
         return this.record.subject;
@@ -42,6 +55,12 @@ export class SoccerMessage{
     }
     reply(pay=null) : SoccerMessage {
         const retort = new SoccerMessage(this.record.subject, pay);
+        if (this.from) {
+            retort.record.to = this.from;
+        }
+        if (this.to) {
+            retort.record.from = this.to;
+        }
         if (this.thread_id) {
             retort.record.thread_id = this.record.thread_id;
         } else {

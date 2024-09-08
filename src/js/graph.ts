@@ -2,7 +2,7 @@ import { EdgeCurvedArrowProgram } from "@sigma/edge-curve";
 import chroma from "chroma-js";
 import Graph from "graphology";
 import ForceSupervisor from "graphology-layout-force/worker";
-import { Attributes } from "graphology-types";
+import { Attributes, NodeMergeResult } from "graphology-types";
 import Sigma from "sigma";
 import { sendMessage } from "./viz";
 
@@ -37,6 +37,9 @@ export class Registry{
 		this.graph.addNode(label, attrs);
 		this.nodes.add(label);
 		return label;
+	}
+	updateNode(id : string, attrs : Attributes) : NodeMergeResult {
+		return this.graph.mergeNode(id, attrs);
 	}
 	addEdge(From : string, To : string, attrs? : Attributes) : string {
 		const lnk = Link(From, To);

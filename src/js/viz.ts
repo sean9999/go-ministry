@@ -33,7 +33,7 @@ const pulseEdge = async (reg : Registry, fromId : string, toId : string) => {
     return Promise.resolve(true);    
 }
 
-const sendMessage = async (reg : Registry, fromId : string, toId : string) => {
+const emitParticle = async (reg : Registry, fromId : string, toId : string) => {
     const e = reg.getLink(fromId, toId);
     const graph = reg.graph;
     if (!e) {
@@ -46,4 +46,5 @@ const sendMessage = async (reg : Registry, fromId : string, toId : string) => {
     return Promise.resolve(e);
 }
 
-export { sendMessage };
+export { pulseEdge, pulseNode, emitParticle as sendMessage };
+
