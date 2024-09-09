@@ -25,7 +25,7 @@ type Store[T harebrain.EncodeHasher] interface {
 	AllRecords() (map[string][]byte, error)
 }
 
-func storeBase() *harebrain.Database {
+func hareBase() *harebrain.Database {
 	db := harebrain.NewDatabase()
 	db.Open(ROOT)
 	return db

@@ -39,7 +39,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	// WebSocket endpoint
-	g := graph.NewGraph()
+	g := graph.NewMemGraph()
 	ws_path := os.Getenv("WS_PATH")
 	if ws_path == "" {
 		ws_path = "ws"

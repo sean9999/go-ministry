@@ -76,11 +76,23 @@ func (g Graph) EdgeExists(n1, n2 string) bool {
 	return g.Store.Edges.Has(e.Hash())
 }
 
-func NewGraph() Graph {
+func NewMemGraph() Graph {
 	ship := NewMotherShip()
 	pers := GraphStore{
-		NewNodeStore(),
-		NewEdgeStore(),
+		&nodeMemStore{},
+		&edgeMemStore{},
+	}
+	g := Graph{
+		ship, pers,
+	}
+	return g
+}
+
+func NewJSONGraph() Graph {
+	ship := NewMotherShip()
+	pers := GraphStore{
+		NewJSONNodeStore(),
+		NewJSONEdgeStore(),
 	}
 	g := Graph{
 		ship, pers,
