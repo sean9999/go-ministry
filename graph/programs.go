@@ -1,7 +1,6 @@
 package graph
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -54,6 +53,17 @@ func DaisyChainConnections(g Graph) {
 		g.Broker.Outbox <- msg
 	}
 
+	//	the last one is connected to the first
+	e := Edge{
+		nodes[len(nodes)-1].Hash(),
+		nodes[0].Hash(),
+	}
+	g.AddEdge(e)
+	msg := NewMessage()
+	msg.SetPayload(e.RawJson())
+	msg.Subject = "command/addEdge"
+	g.Broker.Outbox <- msg
+
 }
 
 func Infectify(g Graph, fromNode, toNode *Node) {
@@ -77,9 +87,10 @@ func Infectify(g Graph, fromNode, toNode *Node) {
 	g.UpdateNode(toNode.Hash(), attrs)
 	msg := NewMessage()
 
+	msg.From = fromNode.Hash()
 	msg.To = toNode.Hash()
 
-	msg.Subject = "command/updateNode"
+	msg.Subject = "command/passItOn"
 
 	msg.SetPayload(attrs)
 	g.Broker.Outbox <- msg
@@ -91,8 +102,8 @@ func Infectify(g Graph, fromNode, toNode *Node) {
 
 	time.Sleep(TICK * 25)
 
-	fmt.Println("outgoing edges", outgoingEdges)
-	fmt.Println("hash", toNode.Hash())
+	//fmt.Println("outgoing edges", outgoingEdges)
+	//fmt.Println("hash", toNode.Hash())
 
 	for _, e := range outgoingEdges {
 		targetNode, err := g.Store.Nodes.Get(e.To())

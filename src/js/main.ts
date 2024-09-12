@@ -1,7 +1,7 @@
 import { WEBSOCKET_URL } from './env';
 import init, { Link } from "./graph";
 import { SoccerMessage, SoccerMessageHandler } from './msg';
-import { pulseEdge, pulseNode, sendMessage } from './viz';
+import { emitParticle, pulseEdge, pulseNode } from './viz';
 const ta : HTMLTextAreaElement = <HTMLTextAreaElement>document.getElementById("t");
 //const logTempl : HTMLTemplateElement = <HTMLTemplateElement>document.getElementById('log');
 const logPoint : HTMLDivElement = <HTMLDivElement>document.getElementById("logs");
@@ -133,7 +133,7 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             registry.updateNode(msg.record.to, msg.record.payload);
 
         case "command/passItOn":
-            sendMessage(registry, msg.record.from, msg.record.to)
+            emitParticle(registry, msg.record.from, msg.record.to)
             .then(() => {
                 return registry.updateNode(msg.record.to, msg.record.payload);
             })

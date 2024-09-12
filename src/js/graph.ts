@@ -4,7 +4,7 @@ import Graph from "graphology";
 import ForceSupervisor from "graphology-layout-force/worker";
 import { Attributes, NodeMergeResult } from "graphology-types";
 import Sigma from "sigma";
-import { sendMessage } from "./viz";
+import { emitParticle } from "./viz";
 
 export function Link(from : string, to : string) : string {
 	return JSON.stringify([from, to]);
@@ -154,8 +154,8 @@ export default (container : HTMLElement, ws : WebSocket) => {
 		});
 
 		//	animate
-		sendMessage(registry, id, closestNodes[0].nodeId);
-		sendMessage(registry, id, closestNodes[1].nodeId);
+		emitParticle(registry, id, closestNodes[0].nodeId);
+		emitParticle(registry, id, closestNodes[1].nodeId);
 
 	});
 

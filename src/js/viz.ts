@@ -10,13 +10,13 @@ const waitFor = (ms : number) => {
 };
 
 const pulseNode = async (g : Graph, id : string) => {
-    const originalColour = g.getNodeAttribute(id, "_originalColor");
+    //const originalColour = g.getNodeAttribute(id, "_originalColor");
     const originalSize = g.getNodeAttribute(id, "_originalSize");
     g.setNodeAttribute(id, "size", 17);
     g.setNodeAttribute(id, "color", "purple");
     await waitFor(TICK);
     g.setNodeAttribute(id, "size", originalSize);
-    g.setNodeAttribute(id, "color", originalColour);
+    //g.setNodeAttribute(id, "color", originalColour);
     return Promise.resolve(true);
 }
 
@@ -29,7 +29,7 @@ const pulseEdge = async (reg : Registry, fromId : string, toId : string) => {
     const originalColor = "gray";
     const originalSize = 2;
     
-    graph.setEdgeAttribute(e, "size", 7);
+    graph.setEdgeAttribute(e, "size", 5);
     graph.setEdgeAttribute(e, "color", "purple");
     await waitFor(TICK);
     graph.setEdgeAttribute(e, "size", originalSize);
@@ -50,5 +50,5 @@ const emitParticle = async (reg : Registry, fromId : string, toId : string) => {
     return Promise.resolve(e);
 }
 
-export { pulseEdge, pulseNode, emitParticle as sendMessage };
+export { emitParticle, pulseEdge, pulseNode };
 
