@@ -7,7 +7,7 @@ import (
 
 type Edge [2]string
 
-func (e *Edge) String() string {
+func (e *Edge) Hash() string {
 	return fmt.Sprintf("%s-to-%s", e[0], e[1])
 }
 
@@ -17,10 +17,6 @@ func (e *Edge) From() string {
 
 func (e *Edge) To() string {
 	return e[1]
-}
-
-func (e *Edge) Hash() string {
-	return e.String() + ".json"
 }
 
 func (e *Edge) RawJson() json.RawMessage {

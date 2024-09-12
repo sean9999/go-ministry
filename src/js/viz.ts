@@ -23,8 +23,12 @@ const pulseNode = async (g : Graph, id : string) => {
 const pulseEdge = async (reg : Registry, fromId : string, toId : string) => {
     const e = reg.getLink(fromId, toId);
     const graph = reg.graph;
-    const originalColor = graph.getEdgeAttribute(e, "color");
-    const originalSize = graph.getEdgeAttribute(e, "size");
+   // const originalColor = graph.getEdgeAttribute(e, "color");
+    //const originalSize = graph.getEdgeAttribute(e, "size");
+    
+    const originalColor = "gray";
+    const originalSize = 2;
+    
     graph.setEdgeAttribute(e, "size", 7);
     graph.setEdgeAttribute(e, "color", "purple");
     await waitFor(TICK);

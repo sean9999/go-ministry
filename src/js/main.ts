@@ -99,6 +99,7 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             console.log("soccer mesage", "marco polo", msg.record);
         break;
         case "command/addPeer":
+        case "command/addNode":
             const attrs = msg.record.payload;
             const coords = randomCoordinates();
             attrs.id = attrs.nick;
@@ -109,6 +110,7 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             registry.addNode(attrs);
             rebuildFriends();
         break;
+        case "command/addEdge":
         case "command/addRelationship":
             const [from, to] = msg.record.payload;
             registry.addEdge(from, to);
@@ -125,10 +127,19 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             pulseEdge(registry, msg.record.payload[0], msg.record.payload[1])
         break;
         case "command/updateNode":
-            sendMessage(registry, msg.record.from, msg.record.to).then(() => {
+            // sendMessage(registry, msg.record.from, msg.record.to).then(() => {
+            //     return registry.updateNode(msg.record.to, msg.record.payload);
+            // }).then(console.log);
+            registry.updateNode(msg.record.to, msg.record.payload);
+
+        case "command/passItOn":
+            sendMessage(registry, msg.record.from, msg.record.to)
+            .then(() => {
                 return registry.updateNode(msg.record.to, msg.record.payload);
-            }).then(console.log);
-            
+            })
+            .then(console.log)
+            .then(console.error);
+        break;
 
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);

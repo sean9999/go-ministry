@@ -143,7 +143,7 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				err = g.AddEdge(names[0], names[1])
+				err = g.AddEdge(graph.Edge{names[0], names[1]})
 				if err != nil {
 					panic(err)
 				}
@@ -157,6 +157,23 @@ func main() {
 				g.Broker.Outbox <- msg2
 
 			case "hello/imAwake":
+				graph.AddABunchOfNodes(g)
+				time.Sleep(1 * time.Second)
+				graph.AddABunchOfRandomConnections(g)
+				graph.DaisyChainConnections(g)
+				startEdge := g.RandomEdge()
+				n1, err := g.Store.Nodes.Get(startEdge.From())
+				if err != nil {
+					panic(err)
+				}
+				n2, err := g.Store.Nodes.Get(startEdge.To())
+				if err != nil {
+					panic(err)
+				}
+				graph.Infectify(g, n1, n2)
+				break
+
+			case "hello/imAwake_x":
 
 				//	load graph entities
 				records, err := g.Store.Nodes.AllRecords()

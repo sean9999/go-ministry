@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/sean9999/harebrain"
 )
@@ -68,4 +69,9 @@ func (gs GraphStore) Zip(filename string) error {
 	w.Close()
 	os.WriteFile(filename, buf.Bytes(), 0644)
 	return nil
+}
+
+func withoutJsonExt(str string) string {
+	before, _, _ := strings.Cut(str, ".json")
+	return before
 }

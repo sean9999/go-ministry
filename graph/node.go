@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"maps"
+	"sync"
 
 	"github.com/sean9999/go-oracle"
 )
@@ -18,11 +19,19 @@ func (attr NodeAttributes) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m)
 }
 
-func (a1 *NodeAttributes) Combine(a2 NodeAttributes) {
-	maps.Copy(*a1, a2)
+func (a1 NodeAttributes) Combine(a2 NodeAttributes) NodeAttributes {
+	a3 := make(NodeAttributes, len(a1)+len(a2))
+	for k, v := range a1 {
+		a3[k] = v
+	}
+	for k, v := range a2 {
+		a3[k] = v
+	}
+	return a3
 }
 
 type Node struct {
+	*sync.Mutex
 	Peer  oracle.Peer    `json:"peer"`
 	Attrs NodeAttributes `json:"attrs,omitempty"`
 }
@@ -37,8 +46,14 @@ func (n *Node) AsMessage() (*Message, error) {
 	return &m, nil
 }
 
+func (n *Node) Update(attrs NodeAttributes) {
+	//n.Lock()
+	n.Attrs = n.Attrs.Combine(attrs)
+	//n.Unlock()
+}
+
 func (n *Node) Hash() string {
-	return fmt.Sprintf("%s.json", n.Peer.Nickname())
+	return n.Peer.Nickname()
 }
 
 func (n *Node) MarshalJSON() ([]byte, error) {

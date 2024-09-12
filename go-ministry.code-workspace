@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"workbench.iconTheme": "vscode-unfancy-file-icons-codicons",
+		"workbench.colorCustomizations": {
+			"activityBar.activeBackground": "#bc23a0",
+			"activityBar.foreground": "#eeff00",
+			"statusBar.background": "#bc23a0",
+			"titleBar.activeBackground": "default",
+			"titleBar.activeForeground": "#eeff00",
+			"sash.hoverBorder": "#2f7c47",
+			"statusBarItem.remoteBackground": "#bc23a0"
+		}
+	}
+}

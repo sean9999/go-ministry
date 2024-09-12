@@ -31,8 +31,7 @@ func (g Graph) RandomEdge() *Edge {
 	return a[0]
 }
 
-func (g Graph) AddEdge(name1, name2 string) error {
-	e := Edge{name1, name2}
+func (g Graph) AddEdge(e Edge) error {
 	return g.Store.Edges.Save(&e)
 }
 
@@ -41,8 +40,21 @@ func (g Graph) UpdateNode(id string, attrs NodeAttributes) error {
 	if err != nil {
 		return err
 	}
-	n.Attrs.Combine(attrs)
+	n.Update(attrs)
 	return nil
+}
+
+func (g Graph) OutgoingEdges(nodeId string) ([]*Edge, error) {
+	if !g.Store.Nodes.Has(nodeId) {
+		return nil, errors.New("no such node")
+	}
+	edges := make([]*Edge, 0, 8)
+	for _, e := range g.Store.Edges.All() {
+		if e.From() == nodeId {
+			edges = append(edges, e)
+		}
+	}
+	return edges, nil
 }
 
 func (g Graph) SendMessage(msg Message) error {
@@ -79,8 +91,8 @@ func (g Graph) EdgeExists(n1, n2 string) bool {
 func NewMemGraph() Graph {
 	ship := NewMotherShip()
 	pers := GraphStore{
-		&nodeMemStore{},
-		&edgeMemStore{},
+		NewNodeMemStore(),
+		NewEdgeMemStore(),
 	}
 	g := Graph{
 		ship, pers,
