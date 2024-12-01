@@ -56,6 +56,7 @@ const sendAndLog = (ws : WebSocket, subject : string, msg : SoccerMessage) => {
 }
 
 const logit = (subject : string, msg : SoccerMessage) => {
+    return;
     const pretty = JSON.stringify(msg.record,null,"\t");
     const html = `<div><h4>${subject}</h4><pre>${pretty}</pre></div>`;
     const parser = new DOMParser();
@@ -77,7 +78,7 @@ const randomCoordinates = () : coords => {
 
 const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
 
-    console.log("receiving soccer message", msg.record);
+    //console.log("receiving soccer message", msg.record);
 
     //  handle it
     switch (msg.subject) {
@@ -136,10 +137,13 @@ const handleMessage : SoccerMessageHandler = (msg : SoccerMessage) => {
             emitParticle(registry, msg.record.from, msg.record.to)
             .then(() => {
                 return registry.updateNode(msg.record.to, msg.record.payload);
-            })
-            .then(console.log)
-            .then(console.error);
+            });
         break;
+
+        case "command/runFunc":
+            const fn = new Function("fromNode", "toNode", msg.payload);
+            const result = fn(msg.record.from, msg.record.to);
+            console.log({result});
 
         default:
             console.log("soccer mesage", "unhandled subject", msg.record);

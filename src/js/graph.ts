@@ -38,6 +38,11 @@ export class Registry{
 		this.nodes.add(label);
 		return label;
 	}
+
+	// evalNode(id : string, fn : Function) {
+	// 	const n = this.graph.getNo
+	// }
+
 	updateNode(id : string, attrs : Attributes) : NodeMergeResult {
 		return this.graph.mergeNode(id, attrs);
 	}
