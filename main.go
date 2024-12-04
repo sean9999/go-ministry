@@ -160,7 +160,12 @@ func main() {
 				graph.AddABunchOfNodes(g)
 				time.Sleep(1 * time.Second)
 				graph.AddABunchOfRandomConnections(g)
-				graph.DaisyChainConnections(g)
+				graph.AddABunchOfRandomConnections(g)
+				graph.AddABunchOfRandomConnections(g)
+				//graph.DaisyChainConnections(g)
+
+				//graph.OneKing(g)
+
 				startEdge := g.RandomEdge()
 				n1, err := g.Store.Nodes.Get(startEdge.From())
 				if err != nil {

@@ -5,7 +5,7 @@ import (
 )
 
 const TICK = time.Millisecond * 25
-const BUNCH = 64
+const BUNCH = 32
 
 func AddABunchOfNodes(g Graph) {
 	for i := range BUNCH {
@@ -17,6 +17,32 @@ func AddABunchOfNodes(g Graph) {
 		msg.Subject = "command/addNode"
 		g.Broker.Outbox <- msg
 	}
+}
+
+func OneKing(g Graph) {
+	allNodes := g.Store.Nodes.All()
+	king := allNodes[0]
+	for _, thisNode := range allNodes[1:] {
+		e1 := Edge{
+			king.Hash(),
+			thisNode.Hash(),
+		}
+		e2 := Edge{
+			thisNode.Hash(),
+			king.Hash(),
+		}
+		g.AddEdge(e1)
+		msg := NewMessage()
+		msg.SetPayload(e1.RawJson())
+		msg.Subject = "command/addEdge"
+		g.Broker.Outbox <- msg
+		g.AddEdge(e2)
+		msg = NewMessage()
+		msg.SetPayload(e2.RawJson())
+		msg.Subject = "command/addEdge"
+		g.Broker.Outbox <- msg
+	}
+
 }
 
 func AddABunchOfRandomConnections(g Graph) {
